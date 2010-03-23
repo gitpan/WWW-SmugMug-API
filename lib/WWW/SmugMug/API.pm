@@ -13,7 +13,7 @@ Version 1.02
 
 =cut
 
-our $VERSION = '1.02';
+our $VERSION = '1.03';
 
 =head1 SYNOPSIS
 
@@ -1648,6 +1648,57 @@ sub images_delete {
 	return $self->_get_request($api_method, $params);
 }
 
+=head2 images_get
+
+Calls smugmug.images.get.
+
+Parameters:
+
+=over
+
+=item AlbumID (integer) (required)
+
+=item Heavy (boolean)
+
+=item Password (string)
+
+=item SitePassword (string)
+
+=item AlbumKey (string) (required)
+
+=back
+
+=cut
+
+sub images_get {
+	my ( $self, $passed_params ) = @_;
+	my $api_method = 'smugmug.images.get';
+	my $params;
+
+	if(defined $self->{sm_session}) {
+		$params->{SessionID} = $self->{sm_session};
+	}
+	else {
+		return $self->_construct_error('Please call one of the login* methods first.', $ERROR_CODE->{SESSION_NOT_INITIALISED});
+	}
+
+	my @mandatory_params = qw/AlbumID AlbumKey /;
+	for my $param (@mandatory_params) {
+		unless ($params->{$param} = $passed_params->{$param}) {
+			return $self->_construct_error("Missing mandatory parameter $param", $ERROR_CODE->{MISSING_REQUIRED_PARAMETER});
+		}
+	}
+	
+	my @optional_params = qw/Heavy Password SitePassword /;
+	for my $param (@optional_params) {
+		if (defined $passed_params->{$param}) {
+			$params->{$param} = $passed_params->{$param};
+		}
+	} 
+	
+	return $self->_get_request($api_method, $params);
+}
+
 =head2 images_getEXIF
 
 Calls smugmug.images.getEXIF.
@@ -3215,7 +3266,7 @@ This section intentionally left blank.
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2008 Paul Arthur MacIain, all rights reserved.
+Copyright 2008-2010 Paul Arthur MacIain, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
